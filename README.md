@@ -932,7 +932,6 @@ RLS-proben tester **kun med READ queries** (`GET /rest/v1/table?limit=1`):
 | **Zero Setup** | ✅ | ❌ | ❌ | Delvist |
 
 **Safevibe's unikke værdi:**
-- 🇩🇰 Eneste danske sikkerhedsværktøj
 - 🔍 Kombinerer statisk + dynamisk analyse
 - 🚨 Aktivt tester Supabase RLS
 - 🌐 Browser network interception
@@ -950,7 +949,7 @@ Se [LICENSE](LICENSE) for detaljer.
 ### Support
 - **GitHub Issues** - Bug reports og feature requests
 - **Dokumentation** - Denne README
-- **Email** - [dit-email@example.com] (opdater dette)
+- **Email** - [hello@cohlsen.dk]
 
 ### Roadmap
 - [ ] GitHub Actions integration

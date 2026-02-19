@@ -39,8 +39,8 @@ SEVERITY_STYLES = {
 }
 
 SCORE_PENALTIES = {
-    "critical": 20,   # Skærpet fra 15 → 20
-    "warning":  7,    # Skærpet fra 5 → 7
+    "critical": 15,
+    "warning":  5,
     "info":     1,
 }
 

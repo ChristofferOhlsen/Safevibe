@@ -408,20 +408,42 @@ Finder eksponerede secrets i `.env` filer:
 **Bonus:** Tjekker om `.env.example` findes og om `.env.vault` (Dotenv Vault) er korrekt konfigureret.
 
 #### 💻 Kode Scanner
-Finder farlige mønstre i JavaScript, TypeScript, Python, PHP:
+Finder farlige mønstre i JavaScript, TypeScript, Python, PHP, Ruby, Go, Java, C#, Rust, Kotlin og Scala:
 
 | Kategori | Eksempler |
 |----------|-----------|
-| **XSS-risici** | `dangerouslySetInnerHTML`, `innerHTML`, `eval()` |
-| **SQL Injection** | String concatenation i SQL queries |
-| **Command Injection** | `exec()` med user input |
-| **Path Traversal** | `fs.readFile()` med request params |
-| **Hardcoded secrets** | API-nøgler direkte i koden |
-| **Svag kryptografi** | `Math.random()` til tokens, MD5/SHA1 |
-| **JWT problemer** | Tokens uden `expiresIn`, `algorithm: "none"` |
+| **XSS-risici** | `dangerouslySetInnerHTML`, `innerHTML`, `eval()`, `{@html}`, `v-html` |
+| **SQL Injection** | Template literals og string concatenation i SQL queries |
+| **NoSQL Injection** | MongoDB `find()` med `req.body`, Firestore `where()` med user input |
+| **Command Injection** | `exec()`, `os.system()`, `subprocess` med user input |
+| **Path Traversal** | `fs.readFile()`, `path.join()`, Python `open()` med request params |
+| **SSTI** | `ejs.render()`, `Jinja2.from_string()`, Pug/Handlebars med user input |
+| **Insecure Deserialization** | `pickle.loads()`, PHP `unserialize()`, `yaml.unsafe_load()` |
+| **XXE** | `lxml.etree.parse()` med `resolve_entities=True`, Java XML parser |
+| **Hardcoded secrets** | API-nøgler, tokens og passwords direkte i kildekode |
+| **Mass Assignment** | `User.create(req.body)`, `Object.assign()` med request data |
+| **BOLA / IDOR** | `findById(req.params.id)` uden ejerskabs-tjek (API1:2023) |
+| **CSRF mangler** | State-changing endpoints uden CSRF protection |
+| **Svag kryptografi** | `Math.random()` til tokens, MD5/SHA1, forældet `createCipher()` |
+| **JWT problemer** | Tokens uden `expiresIn`, `algorithm: "none"`, `jwt.decode()` uden verify |
+| **Weak Session Management** | `secure: false`, `httpOnly: false`, `sameSite: 'none'` |
+| **File Upload** | Upload til `/public`, manglende filetype validation |
+| **Timing Attacks** | `==` comparison på passwords/tokens |
+| **ReDoS** | `RegExp` constructor med user input, catastrophic backtracking |
+| **Log Injection** | User input logges direkte – falske log entries (A09:2021) |
+| **Race Conditions** | Balance check → withdraw pattern – TOCTOU sårbarhed |
+| **GraphQL** | Introspection i produktion, dybt nested queries |
+| **Clickjacking** | `frameguard: false`, `X-Frame-Options: ALLOW` |
 | **CORS wildcards** | `Access-Control-Allow-Origin: *` |
-| **SSL-deaktivering** | `rejectUnauthorized: false` |
-| **50+ checks** | Dækker OWASP Top 10 |
+| **SSL-deaktivering** | `rejectUnauthorized: false`, `verify=False` |
+| **Resource Exhaustion** | `find()` uden limit, `SELECT *` uden `WHERE`/`LIMIT` (API4:2023) |
+| **LLM Prompt Injection** | OpenAI/Anthropic/Langchain med user input (LLM01:2025) |
+| **LLM Sensitive Data** | Passwords/tokens sendt i AI prompts (LLM06:2025) |
+| **Broken Function Level Auth** | Admin endpoints uden rolle-tjek (API5:2023) |
+| **Unsafe API Consumption** | `fetch()` / `axios` uden timeout, API-svar uden validation |
+| **Supply Chain** | `postinstall` scripts med custom kommandoer |
+| **Framework-specific** | Next.js SSRF, Vue `v-html`, Svelte `{@html}`, Rails `constantize`, React Native WebView |
+| **190+ checks** | **Dækker OWASP Top 10 2025 + OWASP API Security 2023 + OWASP LLM Top 10 2025** |
 
 #### 🗂️ Git Scanner
 Analyserer git-konfiguration og historik:
@@ -670,6 +692,11 @@ python safevibe --no-dynamic  # Statisk scan kun
 | **Frameworks** | `.vue`, `.svelte` |
 | **Python** | `.py` |
 | **PHP** | `.php` |
+| **Ruby** | `.rb` |
+| **Go** | `.go` |
+| **Java / Kotlin / Scala** | `.java`, `.kt`, `.scala` |
+| **C# / .NET** | `.cs` |
+| **Rust** | `.rs` |
 
 ---
 
@@ -693,7 +720,7 @@ safevibe/
     ├── static/            # Statisk analyse
     │   ├── __init__.py
     │   ├── env_scanner.py    # .env secret detection (40+ mønstre)
-    │   ├── code_scanner.py   # Kildekode analyse (50+ checks)
+    │   ├── code_scanner.py   # Kildekode analyse (190+ checks, 11 sprog, OWASP 2025)
     │   └── git_scanner.py    # Git historik + .gitignore
     └── dynamic/           # Dynamisk analyse
         ├── __init__.py
@@ -946,12 +973,14 @@ Se [LICENSE](LICENSE) for detaljer.
 ## 📈 Stats
 
 ```
-🔍 40+ secret-mønstre (statisk)
-💻 50+ kode-checks (OWASP Top 10)
-🗄️ 20+ database-teknologier
+🔍 40+  secret-mønstre (statisk .env scanning)
+💻 190+ kode-checks (OWASP Web + API + LLM Top 10)
+🗄️ 20+  database-teknologier understøttet
+🌐 11   programmeringssprog (JS/TS, Python, PHP, Ruby, Go, Java, C#, Rust, Kotlin, Scala, Vue/Svelte)
 ⚡ 4-lags hybrid database-detektion
 🚨 RLS probe (4 auth-kombinationer × N tabeller)
 🌐 Browser probe (network + DOM + .env-matching)
+🛡️ OWASP Top 10 2025 + API Security 2023 + LLM Top 10 2025
 🇩🇰 100% dansk udviklet
 ```
 

@@ -243,11 +243,589 @@ CODE_CHECKS = [
     (r"(?:fetch|axios)\s*\(\s*['\"]http://(?:10\.|192\.168\.|172\.(?:1[6-9]|2[0-9]|3[0-1])\.)\d+",
      "Hardcodet intern IP-adresse i fetch() – ikke egnet til produktion",
      "warning", None),
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # ── UDVIDEDE SIKKERHEDSTJEKS (70+ nye patterns) ──────────────────────────
+    # ═══════════════════════════════════════════════════════════════════════════
+
+    # ── NoSQL Injection ───────────────────────────────────────────────────────
+    (r"\.find\s*\(\s*\{\s*[^}]*(?:req\.|params\.|query\.|body\.)",
+     "NoSQL injection via request object i MongoDB find()",
+     "critical", None),
+
+    (r"\.findOne\s*\(\s*\{\s*[^}]*(?:req\.|params\.|query\.|body\.)",
+     "NoSQL injection via request object i MongoDB findOne()",
+     "critical", None),
+
+    (r"where\s*\(\s*['\"][^'\"]+['\"]\s*,\s*['\"](?:==|!=|>|<|>=|<=)['\"]\s*,\s*(?:req\.|user|input|params\.|query\.)",
+     "NoSQL injection i Firestore where() query med user input",
+     "critical", None),
+
+    (r"\.updateOne\s*\(\s*\{\s*[^}]*(?:req\.|params\.|query\.|body\.)",
+     "NoSQL injection i MongoDB updateOne() med request data",
+     "critical", None),
+
+    (r"\$where\s*:\s*['\"][^'\"]*\$\{",
+     "MongoDB $where operator med template literal – farlig query injection",
+     "critical", None),
+
+    # ── Server-Side Template Injection (SSTI) ─────────────────────────────────
+    (r"\.render\s*\([^)]*(?:req\.|params\.|query\.|body\.)",
+     "SSTI: Template render() med user input – potentiel RCE",
+     "critical", None),
+
+    (r"ejs\.render\s*\([^)]*\$\{",
+     "EJS template injection – user input i template string",
+     "critical", None),
+
+    (r"pug\.compile\s*\([^)]*(?:req\.|params\.|query\.)",
+     "Pug template injection med user input",
+     "critical", None),
+
+    (r"Handlebars\.compile\s*\([^)]*(?:req\.|params\.|query\.)",
+     "Handlebars template injection med user input",
+     "critical", None),
+
+    (r"Jinja2\.from_string\s*\([^)]*(?:request\.|user|input)",
+     "Jinja2 template injection (Python) – potentiel RCE",
+     "critical", None),
+
+    (r"Template\s*\([^)]*(?:request\.|user|input)",
+     "Python string.Template med user input – SSTI risiko",
+     "critical", None),
+
+    # ── Insecure Deserialization ──────────────────────────────────────────────
+    (r"pickle\.loads\s*\(",
+     "pickle.loads() – Insecure deserialization (Python RCE)",
+     "critical", None),
+
+    (r"pickle\.load\s*\(",
+     "pickle.load() – Insecure deserialization (Python RCE)",
+     "critical", None),
+
+    (r"unserialize\s*\([^)]*\$_",
+     "PHP unserialize() med user input – RCE risiko",
+     "critical", None),
+
+    (r"yaml\.load\s*\([^)]*(?:req|request|user|input)",
+     "YAML unsafe load() med user input – deserialization RCE",
+     "critical", None),
+
+    (r"yaml\.unsafe_load\s*\(",
+     "yaml.unsafe_load() brugt – potentiel RCE",
+     "critical", None),
+
+    (r"JsonConvert\.DeserializeObject\s*<[^>]+>\s*\([^)]*(?:Request|User|Input)",
+     "C# JSON deserialization med user input – TypeNameHandling risiko",
+     "warning", None),
+
+    # ── XML External Entity (XXE) ─────────────────────────────────────────────
+    (r"new\s+DOMParser\s*\(\s*\{\s*[^}]*resolveExternalEntities\s*:\s*true",
+     "DOMParser med resolveExternalEntities: true – XXE sårbar",
+     "critical", None),
+
+    (r"xml2js\.parseString\s*\([^)]*\{\s*[^}]*xmlExternal\s*:\s*true",
+     "xml2js med xmlExternal: true – XXE risiko",
+     "critical", None),
+
+    (r"lxml\.etree\.parse\s*\([^)]*resolve_entities\s*=\s*True",
+     "lxml.etree.parse med resolve_entities=True – XXE sårbar",
+     "critical", None),
+
+    (r"DocumentBuilder(?:Factory)?[^;]*setFeature\s*\([^)]*FEATURE_SECURE_PROCESSING[^)]*false",
+     "Java XML parser uden secure processing – XXE risiko",
+     "critical", None),
+
+    (r"XmlReader\.Create\s*\([^)]*DtdProcessing\s*=\s*DtdProcessing\.Parse",
+     "C# XmlReader med DTD processing – XXE sårbar",
+     "critical", None),
+
+    # ── Path Manipulation & Traversal ─────────────────────────────────────────
+    (r"path\.join\s*\([^)]*(?:req\.|params\.|query\.|body\.)[^)]*\)",
+     "path.join() med request parameter – mulig path traversal hvis ikke valideret",
+     "warning", None),
+
+    (r"path\.resolve\s*\([^)]*(?:req\.|params\.|query\.|body\.)",
+     "path.resolve() med request parameter – path manipulation risiko",
+     "warning", None),
+
+    (r"sendFile\s*\([^)]*(?:req\.|params\.|query\.|body\.)",
+     "sendFile() med request parameter – path traversal risiko",
+     "critical", None),
+
+    (r"res\.download\s*\([^)]*(?:req\.|params\.|query\.|body\.)",
+     "res.download() med request parameter – path traversal risiko",
+     "critical", None),
+
+    (r"fs\.(?:readFile|writeFile|unlink|rmdir)\s*\([^)]*(?:req\.|params\.|query\.)",
+     "fs operationer med request parameter uden validation",
+     "critical", None),
+
+    (r"open\s*\([^)]*(?:request\.|user|input|params|query)",
+     "Python open() med user input – path traversal risiko",
+     "critical", None),
+
+    (r"File\s*\([^)]*(?:request\.|Request\.|user|input)",
+     "File operationer med user input uden validation",
+     "warning", None),
+
+    # ── CSRF Token mangler ────────────────────────────────────────────────────
+    (r"(?:app|router)\.post\s*\(['\"][^'\"]*(?:/api/)?(?:delete|remove|transfer|payment|withdraw|admin)[^'\"]*['\"]",
+     "State-changing POST endpoint – verificer CSRF protection (csrf-token, SameSite cookie)",
+     "warning", None),
+
+    (r"(?:app|router)\.delete\s*\(['\"]",
+     "DELETE endpoint – verificer CSRF/auth protection",
+     "warning", None),
+
+    (r"(?:app|router)\.put\s*\(['\"][^'\"]*(?:update|edit|modify)[^'\"]*['\"]",
+     "State-changing PUT endpoint – verificer CSRF protection",
+     "warning", None),
+
+    # ── Mass Assignment ───────────────────────────────────────────────────────
+    (r"(?:User|Account|Admin)\.create\s*\(\s*req\.body\s*\)",
+     "Mass assignment – req.body direkte til model.create() (kan sætte role=admin)",
+     "critical", None),
+
+    (r"(?:User|Model)\.update\s*\(\s*req\.body\s*\)",
+     "Mass assignment – req.body direkte til model.update()",
+     "critical", None),
+
+    (r"new\s+(?:User|Account|Model)\s*\(\s*req\.body\s*\)",
+     "Mass assignment via constructor med req.body",
+     "warning", None),
+
+    (r"Object\.assign\s*\([^,]+,\s*req\.body\s*\)",
+     "Object.assign med req.body – mass assignment + prototype pollution",
+     "critical", None),
+
+    (r"\.save\s*\(\s*\{\s*[^}]*req\.body[^}]*\}\s*\)",
+     "Mongoose save() med req.body – mass assignment risiko",
+     "warning", None),
+
+    # ── Weak Session Management ──────────────────────────────────────────────
+    (r"session\s*:\s*\{[^}]*secure\s*:\s*false",
+     "Session cookie secure: false – sendes over ukrypteret HTTP",
+     "critical", None),
+
+    (r"cookie\s*:\s*\{[^}]*httpOnly\s*:\s*false",
+     "Cookie httpOnly: false – sårbar over for XSS stjæler cookies",
+     "critical", None),
+
+    (r"sameSite\s*:\s*['\"]none['\"]",
+     "sameSite: 'none' – tillader cross-site requests (CSRF risiko)",
+     "warning", None),
+
+    (r"session\s*:\s*\{[^}]*cookie\s*:\s*\{[^}]*maxAge\s*:\s*(?:[1-9]\d{9,}|\d{11,})",
+     "Session maxAge over 1 år – ekstremt lang session-levetid",
+     "warning", None),
+
+    (r"express-session[^}]*secret\s*:\s*['\"][^'\"]{1,7}['\"]",
+     "express-session secret under 8 tegn – for svag",
+     "warning", None),
+
+    # ── Regular Expression DoS (ReDoS) ────────────────────────────────────────
+    (r"new\s+RegExp\s*\([^)]*(?:req\.|params\.|query\.|body\.)",
+     "RegExp constructor med user input – ReDoS risiko",
+     "critical", None),
+
+    (r"/\([a-zA-Z]+\)\+[^/]*/.test\s*\(",
+     "Potentiel ReDoS pattern: (x)+ – catastrophic backtracking",
+     "warning", None),
+
+    (r"/\([^)]*\|[^)]*\)\*[^/]*/.test\s*\(",
+     "Potentiel ReDoS pattern: (a|b)* – catastrophic backtracking",
+     "warning", None),
+
+    (r"re\.compile\s*\([^)]*(?:request\.|user|input)",
+     "Python re.compile med user input – ReDoS risiko",
+     "warning", None),
+
+    # ── HTTP Response Splitting / Header Injection ────────────────────────────
+    (r"res\.setHeader\s*\([^)]*(?:req\.|params\.|query\.|body\.)",
+     "res.setHeader() med user input – HTTP response splitting risiko",
+     "critical", None),
+
+    (r"res\.writeHead\s*\([^)]*\{[^}]*(?:req\.|params\.|query\.)",
+     "res.writeHead() med user-controlled headers – header injection",
+     "critical", None),
+
+    (r"response\.headers\[[^\]]*\]\s*=\s*(?:request\.|user|input)",
+     "HTTP header sat til user input – header injection risiko",
+     "critical", None),
+
+    (r"HttpResponse\s*\([^)]*headers\s*=\s*\{[^}]*(?:request\.|user)",
+     "Django HttpResponse med user-controlled headers",
+     "critical", None),
+
+    # ── Timing Attacks ────────────────────────────────────────────────────────
+    (r"(?:password|token|secret|key|hash)\s*(?:===?|!==?)\s*(?:stored|expected|correct)",
+     "Timing attack: string comparison på secrets – brug crypto.timingSafeEqual()",
+     "warning", None),
+
+    (r"if\s*\([^)]*(?:password|token)\s*==\s*",
+     "Timing attack: == comparison på password/token",
+     "warning", None),
+
+    (r"hmac\.compare\s*\(\s*(?:str|String)",
+     "HMAC comparison skal bruge timingSafeEqual, ikke string compare",
+     "warning", None),
+
+    # ── GraphQL Security ──────────────────────────────────────────────────────
+    (r"introspection\s*:\s*true(?![^{]*NODE_ENV)",
+     "GraphQL introspection aktiveret – deaktiver i produktion",
+     "warning", None),
+
+    (r"graphqlHTTP\s*\(\s*\{[^}]*graphiql\s*:\s*true",
+     "GraphiQL UI aktiveret – deaktiver i produktion",
+     "warning", None),
+
+    (r"ApolloServer\s*\(\s*\{[^}]*playground\s*:\s*true",
+     "GraphQL Playground aktiveret – deaktiver i produktion",
+     "info", None),
+
+    (r"(?:query|mutation)\s+\{[^}]*\{[^}]*\{[^}]*\{[^}]*\{",
+     "Dybt nested GraphQL query – potentiel depth attack (brug depth limiting)",
+     "warning", None),
+
+    # ── File Upload Vulnerabilities ───────────────────────────────────────────
+    (r"multer\s*\(\s*\{[^}]*dest\s*:\s*['\"]\.?/?public",
+     "File upload til public folder – kan uploade executables",
+     "critical", None),
+
+    (r"upload\.(?:single|array|fields)\s*\([^)]*\)(?![^;]*fileFilter)",
+     "File upload uden fileFilter – manglende filetype validation",
+     "warning", None),
+
+    (r"\.save\s*\([^)]*(?:req\.files|uploadedFile)(?![^;]*(?:mimetype|contentType))",
+     "File save uden mimetype check – kan uploade farlige filtyper",
+     "warning", None),
+
+    (r"move_uploaded_file\s*\([^)]*\$_FILES",
+     "PHP file upload – verificer mime type og destination",
+     "warning", None),
+
+    (r"request\.files\[[^\]]+\]\.save\s*\(",
+     "Flask file upload – tjek allowed extensions og mime type",
+     "warning", None),
+
+    # ── Information Disclosure ────────────────────────────────────────────────
+    (r"app\.use\s*\(\s*errorHandler\s*\(\s*\{[^}]*showStack\s*:\s*true",
+     "Error handler med showStack: true – læk stack traces til klient",
+     "critical", None),
+
+    (r"app\.set\s*\(\s*['\"]env['\"],\s*['\"]development['\"]",
+     "app.set('env', 'development') hardcodet – brug process.env.NODE_ENV",
+     "warning", None),
+
+    (r"DEBUG\s*=\s*True(?![^#]*#.*test)",
+     "Django DEBUG = True – deaktiver i produktion",
+     "critical", None),
+
+    (r"\.catch\s*\([^)]*=>\s*\{[^}]*res\.(?:send|json)\s*\([^)]*err(?:or)?\.stack",
+     "Error stack trace sendt til klient i catch block",
+     "critical", None),
+
+    (r"console\.error\s*\([^)]*\.stack\s*\)",
+     "Error stack logged – kan lække i produktion hvis logs er eksponeret",
+     "info", None),
+
+    (r"throw\s+new\s+Error\s*\([^)]*(?:password|token|secret|key)",
+     "Sensitiv data i Error message – kan logges/eksponeres",
+     "warning", None),
+
+    # ── Clickjacking / Frame Protection ───────────────────────────────────────
+    (r"helmet\s*\(\s*\{[^}]*frameguard\s*:\s*false",
+     "Helmet frameguard deaktiveret – clickjacking risiko",
+     "warning", None),
+
+    (r"X-Frame-Options['\"]?\s*:\s*['\"]ALLOW",
+     "X-Frame-Options sat til ALLOW – clickjacking risiko",
+     "warning", None),
+
+    (r"frame-ancestors\s+[*']",
+     "CSP frame-ancestors wildcard – clickjacking risiko",
+     "warning", None),
+
+    # ── Next.js Specific ──────────────────────────────────────────────────────
+    (r"getServerSideProps[^{]*\{[^}]*query[^}]*\}[^{]*\{[^}]*fetch\s*\([^)]*query\.",
+     "Next.js SSRF: fetch() i getServerSideProps med query parameter",
+     "critical", "Next.js"),
+
+    (r"getServerSideProps[^{]*\{[^}]*params[^}]*\}[^{]*\{[^}]*import\s*\([^)]*params\.",
+     "Next.js dynamic import med params – code injection risiko",
+     "critical", "Next.js"),
+
+    (r"export\s+async\s+function\s+GET\s*\([^)]*request[^)]*\)[^{]*\{(?![^}]*auth|[^}]*session)",
+     "Next.js API route GET uden auth check (App Router)",
+     "info", "Next.js"),
+
+    (r"export\s+async\s+function\s+POST\s*\([^)]*request[^)]*\)[^{]*\{(?![^}]*auth|[^}]*session)",
+     "Next.js API route POST uden auth check (App Router)",
+     "warning", "Next.js"),
+
+    # ── React Native Specific ─────────────────────────────────────────────────
+    (r"<WebView[^>]*source\s*=\s*\{\{[^}]*uri\s*:\s*(?:props\.|route\.|navigation\.)",
+     "React Native WebView med dynamic URI – open redirect/XSS risiko",
+     "critical", "React Native"),
+
+    (r"Linking\.openURL\s*\([^)]*(?:props\.|route\.|navigation\.)",
+     "React Native Linking.openURL med dynamic URL – open redirect",
+     "warning", "React Native"),
+
+    (r"Platform\.OS\s*===\s*['\"]android['\"]&&[^;]*allowFileAccess",
+     "React Native WebView allowFileAccess på Android – file access risiko",
+     "warning", "React Native"),
+
+    # ── Vue.js Specific ───────────────────────────────────────────────────────
+    (r"v-html\s*=\s*['\"](?!static)[^'\"]*\$",
+     "Vue v-html med dynamic data – XSS risiko hvis ikke sanitized",
+     "critical", "Vue"),
+
+    (r"\$options\.template\s*=",
+     "Vue $options.template manipulation – template injection",
+     "critical", "Vue"),
+
+    (r"Vue\.compile\s*\([^)]*(?:props\.|user|input)",
+     "Vue.compile() med user input – template injection",
+     "critical", "Vue"),
+
+    # ── Svelte Specific ───────────────────────────────────────────────────────
+    (r"\{@html\s+(?!sanitize)[^\}]*\}",
+     "Svelte {@html} uden sanitization – XSS risiko",
+     "critical", "Svelte"),
+
+    (r"@html\s+(?:props\.|$props\.|\$)",
+     "Svelte {@html} med dynamic props – XSS hvis ikke sanitized",
+     "critical", "Svelte"),
+
+    # ── Python/Django Specific ────────────────────────────────────────────────
+    (r"exec\s*\([^)]*(?:request\.|user|input)",
+     "Python exec() med user input – arbitrary code execution",
+     "critical", "Django"),
+
+    (r"os\.system\s*\([^)]*(?:request\.|user|input|f['\"])",
+     "os.system() med user input – command injection",
+     "critical", None),
+
+    (r"subprocess\.(?:call|run|Popen)\s*\([^)]*(?:request\.|user|input|f['\"])(?![^)]*shell\s*=\s*False)",
+     "subprocess med user input og mulig shell=True – command injection",
+     "critical", None),
+
+    (r"\.raw\s*\([^)]*(?:request\.|user|input|f['\"]|%s)",
+     "Django raw SQL query med user input – SQL injection",
+     "critical", "Django"),
+
+    (r"\.extra\s*\(\s*where\s*=\s*\[[^]]*(?:request\.|user|input|%)",
+     "Django .extra() med user input i where – SQL injection",
+     "critical", "Django"),
+
+    (r"cursor\.execute\s*\([^)]*(?:%s|%d|f['\"])",
+     "Python DB cursor.execute med string formatting – SQL injection",
+     "critical", None),
+
+    # ── Security Headers Mangler ──────────────────────────────────────────────
+    (r"app\.use\s*\(\s*helmet\s*\(\s*\{[^}]*contentSecurityPolicy\s*:\s*false",
+     "Helmet CSP deaktiveret – XSS beskyttelse fjernet",
+     "warning", None),
+
+    (r"app\.use\s*\(\s*helmet\s*\(\s*\{[^}]*hsts\s*:\s*false",
+     "Helmet HSTS deaktiveret – mangler HTTPS enforcement",
+     "warning", None),
+
+    # ── Ruby/Rails Specific ───────────────────────────────────────────────────
+    (r"eval\s*\([^)]*params\[",
+     "Ruby eval() med params – code injection",
+     "critical", None),
+
+    (r"send\s*\([^)]*params\[",
+     "Ruby send() med params – method injection",
+     "critical", None),
+
+    (r"constantize[^;]*params",
+     "Rails constantize med params – code injection via constant resolution",
+     "critical", None),
+
+    (r"where\s*\([^)]*params\[(?![^)]*sanitize)",
+     "Rails where() med usanitized params – SQL injection risiko",
+     "warning", None),
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # ── OWASP TOP 10 2025 + API SECURITY 2023 CHECKS ─────────────────────────
+    # ═══════════════════════════════════════════════════════════════════════════
+
+    # ── LLM / AI Prompt Injection (OWASP LLM Top 10 2025 – LLM01) ────────────
+    (r"openai\.chat\.completions\.create\s*\([^)]*(?:req\.|params\.|query\.|body\.|user|input)",
+     "LLM Prompt Injection: OpenAI med user input – mangler input sanitering",
+     "critical", None),
+
+    (r"anthropic\.messages\.create\s*\([^)]*(?:req\.|params\.|query\.|body\.|user|input)",
+     "LLM Prompt Injection: Anthropic/Claude med user input – mangler input sanitering",
+     "critical", None),
+
+    (r"(?:LLMChain|ConversationChain|load_qa_chain).*(?:run|call)\s*\([^)]*(?:req\.|user|input)",
+     "LLM Prompt Injection: Langchain chain.run() med user input",
+     "critical", None),
+
+    (r"openai\.[^.]+\.\w+\s*\(\s*\{[^}]*messages\s*:\s*\[[^\]]*(?:req\.|user|input|params\.)",
+     "LLM Prompt Injection: AI messages-array indeholder user input uden sanitering",
+     "critical", None),
+
+    (r"(?:system|user|assistant)\s*:\s*['\"`][^'\"`,]*\$\{[^}]*(?:user|input|req|query)",
+     "LLM Prompt Injection: Direkte string interpolation i AI prompt",
+     "critical", None),
+
+    (r"prompt\s*[:=]\s*['\"`][^'\"`,]*\$\{[^}]*(?:user|input|req|query)",
+     "LLM Prompt Injection: User input injiceret i AI prompt-string",
+     "critical", None),
+
+    # ── Insecure Output Handling (OWASP LLM02) ────────────────────────────────
+    (r"(?:res\.send|res\.json|innerHTML)\s*\([^)]*(?:completion|response|generated|llm|ai)(?:\.(?:content|text|message|output))?",
+     "LLM Insecure Output: AI-genereret svar sendes direkte til DOM/klient uden sanitering",
+     "warning", None),
+
+    # ── Sensitive Data i AI Prompts (OWASP LLM06) ─────────────────────────────
+    (r"(?:messages|prompt|content)\s*:\s*.*(?:password|secret|api_key|token|ssn|credit.card)",
+     "LLM Sensitive Data: Sensitiv data sendt i AI prompt",
+     "critical", None),
+
+    # ── BOLA / IDOR (OWASP API1:2023) ─────────────────────────────────────────
+    (r"\.findById\s*\(\s*req\.params\.\w+\s*\)(?![^;]*userId|[^;]*user\.id|[^;]*where)",
+     "BOLA/IDOR: findById() med req.params uden ejerskabs-tjek – Broken Object Level Auth",
+     "critical", None),
+
+    (r"\.findOne\s*\(\s*\{\s*_?id\s*:\s*req\.params\.\w+\s*\}(?![^}]*user)",
+     "BOLA/IDOR: findOne({id: req.params}) uden user-scope – IDOR risiko",
+     "critical", None),
+
+    (r"\.eq\s*\(['\"]id['\"],\s*(?:req\.params\.|params\.|query\.)\w+\s*\)(?![^;]*eq[^;]*user)",
+     "BOLA/IDOR: Supabase .eq('id', params.id) uden user-scope filter – IDOR risiko",
+     "critical", None),
+
+    (r"GET\s+['\"][^'\"]*/:id['\"].*(?:\n[^\n]*){0,5}(?!.*(?:userId|user_id|owner|req\.user))",
+     "BOLA/IDOR: GET /:id endpoint – verificer at ejerskab tjekkes",
+     "warning", None),
+
+    (r"db\.\w+\s*\.\s*select\s*\(\s*['\*'\"]['\"]?\s*\)(?![^;]*userId|[^;]*user_id|[^;]*eq)",
+     "BOLA/IDOR: Supabase select(*) uden user-scope – potentiel data eksponering",
+     "warning", None),
+
+    # ── Broken Function Level Authorization (OWASP API5:2023) ─────────────────
+    (r"(?:app|router)\.(?:get|post|put|delete|patch)\s*\(['\"][^'\"]*(?:admin|internal|management|superuser|root)[^'\"]*['\"](?![^{]*(?:isAdmin|requireAdmin|adminOnly|checkRole|authorize|authenticate))",
+     "Broken Function Level Auth: Admin/intern endpoint uden synlig rolle-tjek",
+     "critical", None),
+
+    (r"(?:app|router)\.delete\s*\(['\"][^'\"]*(?:user|account|data|record)[^'\"]*['\"](?![^{]*(?:auth|admin|role|authorize))",
+     "Broken Function Level Auth: DELETE endpoint på brugerdata uden auth-tjek",
+     "critical", None),
+
+    # ── Log Injection (OWASP A09:2021) ────────────────────────────────────────
+    (r"(?:logger|log)\.\w+\s*\([^)]*(?:req\.|params\.|query\.|body\.)\w+(?!\s*\|\s*sanitize)",
+     "Log Injection: User input logges direkte – kan injecte falske log entries",
+     "warning", None),
+
+    (r"console\.(?:log|info|warn|error)\s*\([^)]*(?:req\.body|req\.query|req\.params|params\.\w|query\.\w)",
+     "Log Injection: Request data logges direkte – log injection + data lækage",
+     "warning", None),
+
+    (r"(?:winston|bunyan|pino|morgan)\.[^(]+\([^)]*\$\{[^}]*(?:req\.|user|input)",
+     "Log Injection: Logger med template literal fra user input",
+     "warning", None),
+
+    (r"logging\.(?:info|warning|error|debug)\s*\([^)]*(?:request\.|user|input)",
+     "Log Injection: Python logging med user input – kan injecte falske log entries",
+     "warning", None),
+
+    # ── Race Conditions / TOCTOU (OWASP A04:2021 Insecure Design) ─────────────
+    (r"(?:const|let|var)\s+\w+\s*=\s*await\s+.*balance.*\n[^;]*if\s*\([^)]*\w+\s*[><=]+[^)]*\)\s*\{[^}]*await[^}]*(?:withdraw|transfer|deduct|charge)",
+     "Race Condition: Balance check → withdraw pattern – TOCTOU sårbarhed",
+     "critical", None),
+
+    (r"(?:const|let|var)\s+\w+\s*=\s*await\s+\w+\.(?:count|findAll)\s*\(.*\n(?:[^\n]*\n){0,3}[^\n]*await[^\n]*(?:create|insert|save)",
+     "Race Condition: Count check → create pattern – mulig race condition",
+     "warning", None),
+
+    # ── JWT Advanced Security (OWASP A02:2025) ────────────────────────────────
+    (r"jwt\.verify\s*\([^,]+,\s*(?:function|async|\([^)]*\)\s*=>)[^{]*\{[^}]*(?:kid|jku|x5u)[^}]*header",
+     "JWT Kid/jku: Dynamisk key lookup via JWT header – kid injection risiko",
+     "critical", None),
+
+    (r"algorithms\s*:\s*\[[^\]]*(?:['\"]RS256['\"]|['\"]HS256['\"])[^\]]*\]",
+     "JWT algorithms whitelist – verificer at 'none' er ekskluderet",
+     "info", None),
+
+    (r"jwt\.decode\s*\([^,]+(?!\s*,\s*\{[^}]*complete)(?!\s*,\s*['\"][A-Za-z0-9])",
+     "JWT decode() uden verify – token verificeres IKKE (brug jwt.verify())",
+     "critical", None),
+
+    # ── Resource Exhaustion / API Rate (OWASP API4:2023) ──────────────────────
+    (r"\.find\s*\(\s*\{[^}]*\}\s*\)(?![^;]*(?:limit|skip|lean|select|maxTime))",
+     "Resource Exhaustion: MongoDB find() uden limit – kan returnere alle records",
+     "warning", None),
+
+    (r"\.findAll\s*\(\s*\{[^}]*where[^}]*\}(?![^)]*limit)",
+     "Resource Exhaustion: Sequelize findAll() uden limit – kan hente alle records",
+     "warning", None),
+
+    (r"SELECT\s+\*\s+FROM\s+\w+(?![^;]*(?:LIMIT|WHERE))",
+     "Resource Exhaustion: SELECT * uden LIMIT/WHERE – kan hente al data",
+     "warning", None),
+
+    (r"db\.from\s*\(['\"][^'\"]+['\"]\s*\)\.select\s*\(\s*['\*'\"]\s*\)(?![^;]*limit\s*\()",
+     "Resource Exhaustion: Supabase select(*) uden .limit() – potentiel data dump",
+     "warning", None),
+
+    # ── Supply Chain Security (OWASP A06:2025) ────────────────────────────────
+    (r"require\s*\(\s*['\"][^./][^'\"]*['\"\s*\])\s*(?:\/\/[^\n]*internal|\/\/[^\n]*private)",
+     "Supply Chain: intern npm-pakke importeret – verificer registry og scope",
+     "info", None),
+
+    (r"\"scripts\"\s*:[^}]*\"postinstall\"\s*:\s*\"(?!node |npm |yarn )",
+     "Supply Chain: postinstall script med custom kommando – verificer indhold",
+     "warning", None),
+
+    # ── Unsafe Consumption of External APIs (OWASP API10:2023) ────────────────
+    (r"fetch\s*\([^)]*(?:https?://[^/'\")]+)[^)]*\)(?![^;]*(?:timeout|AbortController|signal))",
+     "Unsafe API Consumption: fetch() uden timeout – kan hænge indefinitely (DoS)",
+     "warning", None),
+
+    (r"axios\.(?:get|post|put|delete)\s*\([^)]*(?:https?://)[^)]*\)(?![^;]*timeout)",
+     "Unsafe API Consumption: axios request uden timeout – kan hænge (DoS)",
+     "warning", None),
+
+    (r"(?:const|let|var)\s+\w+\s*=\s*await\s+fetch\s*\([^)]*\)[^;]*;\s*(?:const|let|var)\s+\w+\s*=\s*await\s+\w+\.json\s*\(\s*\)(?![^;]*(?:schema|validate|zod|joi|yup))",
+     "Unsafe API Consumption: Eksternt API-svar bruges uden validering/schema check",
+     "warning", None),
+
+    # ── Prototype Pollution via Object Spread (udvidelse) ─────────────────────
+    (r"\.\.\.\s*(?:req\.body|req\.query|req\.params)",
+     "Prototype Pollution: Object spread med req data – mass assignment risiko",
+     "warning", None),
+
+    (r"deepmerge\s*\([^,]+,\s*(?:req\.|JSON\.parse)",
+     "Prototype Pollution: deepmerge med user input – prototype pollution risiko",
+     "critical", None),
+
+    # ── Insecure Direct Access til process.env i Frontend ─────────────────────
+    (r"process\.env\.\w+(?![^;]*(?:NEXT_PUBLIC|VITE_|REACT_APP_|GATSBY_|PUBLIC_))",
+     "Server env-variabel muligvis eksponeret i klientkode – tjek at det er public variabel",
+     "warning", None),
+
+    (r"import\.meta\.env\.\w+(?!(?:VITE_|PUBLIC_))",
+     "Vite: import.meta.env variabel uden VITE_ prefix – kan være server-side secret",
+     "warning", None),
 ]
 
 SCAN_EXTENSIONS = {
     ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs",
     ".vue", ".svelte", ".py", ".php",
+    ".rb",    # Ruby/Rails
+    ".go",    # Go
+    ".java",  # Java/Spring
+    ".cs",    # C#/.NET
+    ".rs",    # Rust
+    ".kt",    # Kotlin
+    ".scala", # Scala
 }
 EXCLUDE_DIRS = {
     "node_modules", ".git", ".next", "dist", "build",

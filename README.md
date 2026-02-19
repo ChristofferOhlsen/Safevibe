@@ -28,32 +28,285 @@ I 2026 alene blev **64+ danske vibecodet projekter** fundet med kritiske sikkerh
 
 ## 🚀 Quick Start
 
-### Trin 1: Installer afhængigheder
+### 🎯 For Folk Med Minimal GitHub/Python Erfaring
+
+Denne guide hjælper dig med at komme i gang **selv hvis du aldrig har brugt GitHub før**. Følg hvert trin nøje! ✅
+
+---
+
+### 🔧 Trin 0: Tjek Om Du Har Python Installeret
+
+**Åbn din terminal/kommandoprompt:**
+- **Windows**: Tryk `Win + R`, skriv `cmd`, tryk Enter
+- **Mac**: Tryk `Cmd + Space`, skriv `terminal`, tryk Enter
+- **Linux**: Tryk `Ctrl + Alt + T`
+
+**Tjek Python version:**
 ```bash
+python --version
+```
+
+**Hvad skal jeg se?**
+- ✅ `Python 3.8.x` eller højere → Du er klar! Gå til Trin 1
+- ❌ `command not found` eller `Python 2.x` → Installer Python først (se nedenfor)
+
+#### 🐍 Installer Python (hvis nødvendigt)
+
+**Windows:**
+1. Gå til [python.org/downloads](https://www.python.org/downloads/)
+2. Download **Python 3.11** (eller nyere)
+3. Kør installeren
+4. ⚠️ **VIGTIGT**: Sæt flueben ved **"Add Python to PATH"**
+5. Klik "Install Now"
+6. Genstart din terminal og tjek igen med `python --version`
+
+**Mac:**
+```bash
+# Brug Homebrew (hvis du har det)
+brew install python3
+
+# Eller download fra python.org/downloads
+```
+
+**Linux:**
+```bash
+# Ubuntu/Debian
+sudo apt update && sudo apt install python3 python3-pip
+
+# Fedora
+sudo dnf install python3 python3-pip
+```
+
+---
+
+### 📦 Trin 1: Hent Safevibe Fra GitHub
+
+Du har **to muligheder** - vælg den nemmeste for dig:
+
+#### **Mulighed A: Download ZIP** (Nemmest! 🎉)
+
+1. **Gå til**: [github.com/ChristofferOhlsen/Safevibe](https://github.com/ChristofferOhlsen/Safevibe)
+2. **Klik på den grønne "Code" knap** (øverst til højre)
+3. **Vælg "Download ZIP"**
+4. **Pak ZIP-filen ud** (højreklik → "Extract All" / "Pak ud")
+5. **Omdøb mappen** fra `Safevibe-main` til bare `safevibe` (lille s!)
+
+#### **Mulighed B: Git Clone** (Hvis du har Git)
+
+```bash
+git clone https://github.com/ChristofferOhlsen/Safevibe.git safevibe
+```
+
+✅ **Du har nu en mappe der hedder `safevibe`** (lille s!)
+
+---
+
+### 📁 Trin 2: Placer Safevibe I Din Projekt-Rod
+
+**VIGTIGT**: Safevibe skal placeres **i roden** af dit vibecode-projekt!
+
+#### 🗂️ Sådan Skal Din Mappestruktur Se Ud:
+
+```
+mit-projekt/                    ← DIN PROJEKT-ROD
+│
+├── safevibe/                  ← PLACER SAFEVIBE MAPPEN HER!
+│   ├── engine/
+│   │   ├── cli.py
+│   │   ├── detector.py
+│   │   ├── static/
+│   │   └── dynamic/
+│   ├── lib/                   (kommer efter installation)
+│   ├── __main__.py
+│   ├── install.py
+│   ├── README.md
+│   └── safevibe               ← Kørbar fil
+│
+├── src/                       ← DIT PROJEKTS KODE
+│   ├── app/
+│   ├── components/
+│   └── ...
+│
+├── .env                       ← Dine miljøvariabler
+├── .gitignore
+├── package.json               (hvis Node.js projekt)
+├── requirements.txt           (hvis Python projekt)
+└── ...
+```
+
+#### 📋 Step-by-Step Placering:
+
+1. **Find din projekt-rod**:
+   - Det er mappen med `package.json` (Node.js) eller `requirements.txt` (Python)
+   - Normalt hvor din `.env` fil ligger
+   - Mappen hvor du kører `npm run dev` eller `python manage.py runserver`
+
+2. **Flyt/kopier** `safevibe` mappen **direkte ind i projekt-roden**
+
+3. **Tjek at det er rigtigt**:
+   ```bash
+   # Naviger til din projekt-rod i terminalen
+   cd /sti/til/mit-projekt
+   
+   # Tjek at safevibe mappen findes
+   dir safevibe        # Windows
+   ls safevibe         # Mac/Linux
+   ```
+   
+   Du skal se: `engine`, `install.py`, `README.md`, osv.
+
+✅ **Godt klaret! Safevibe er nu placeret korrekt.**
+
+---
+
+### ⚙️ Trin 3: Installer Safevibe Afhængigheder
+
+**Navigér IND i safevibe mappen** og kør installationen:
+
+```bash
+# Fra din projekt-rod, gå ind i safevibe mappen
+cd safevibe
+
+# Kør installation
 python install.py
 ```
-Dette installerer alle dependencies lokalt i `/lib/` mappen (zero-footprint).
 
-### Trin 2: Start dit projekt
+#### ⏳ Hvad Sker Der?
+
+- 🔄 Downloader dependencies (requests, rich, playwright, beautifulsoup4)
+- 📦 Installerer alt lokalt i `/lib/` mappen (ingen global pip install)
+- 🌐 Downloader Chromium browser (~200MB) til dynamisk scanning
+- ⏱️ **Forventet tid**: 2-5 minutter (afhængig af internet hastighed)
+
+#### 🎉 Færdig Når Du Ser:
+
+```
+✅ Dependencies installeret i /lib/
+✅ Playwright installeret
+✅ Browser installeret
+🎉 Safevibe er klar til brug!
+```
+
+---
+
+### 🚀 Trin 4: Start Dit Projekt
+
+**Navigér TILBAGE til din projekt-rod:**
+
 ```bash
-# Eksempel for Next.js/Vite/React
+cd ..    # Gå en mappe op (tilbage til projekt-roden)
+```
+
+**Start dit projekt som normalt:**
+
+```bash
+# Next.js / Vite / React
 npm run dev
 
-# Eksempel for Django/Flask
+# Django
 python manage.py runserver
+
+# Flask
+flask run
+
+# Andre frameworks
+# ... brug din normale start-kommando
 ```
 
-### Trin 3: Scan dit projekt
+**Lad serveren køre!** Åbn en **ny terminal** til næste trin.
+
+---
+
+### 🔍 Trin 5: Scan Dit Projekt
+
+**Åbn en NY terminal** og navigér til din projekt-rod:
+
 ```bash
-# Scan det nuværende projekt
-python safevibe
-
-# Scan et specifikt projekt
-python safevibe /sti/til/dit/projekt
-
-# Scan med en kørende dev-server
-python safevibe /sti/til/projekt --url http://localhost:3000
+cd /sti/til/mit-projekt
 ```
+
+**Kør Safevibe scanning:**
+
+```bash
+# Scan nuværende projekt (fuld scanning)
+python safevibe/safevibe
+
+# ELLER hvis du stadig er i safevibe mappen:
+cd ..
+python safevibe/safevibe
+```
+
+#### 🎯 Scanning Modes:
+
+```bash
+# Scan et specifikt projekt
+python safevibe/safevibe /sti/til/andet/projekt
+
+# Scan med kørende server på custom port
+python safevibe/safevibe --url http://localhost:4000
+
+# Kun statisk analyse (ingen server nødvendig)
+python safevibe/safevibe --no-dynamic
+```
+
+---
+
+### ✅ Hvad Får Du?
+
+Efter scanning viser Safevibe:
+
+- **🎨 Vibe Score** (0-100) der viser din overordnede sikkerhed
+- **📊 Detaljeret rapport** med fundne sårbarheder
+- **⚠️ Prioriterede anbefalinger** (kritisk → advarsel → info)
+- **💡 Konkrete løsninger** til hvert problem
+
+---
+
+### 🆘 Troubleshooting - Almindelige Fejl
+
+#### ❌ "python: command not found"
+**Løsning**: Python er ikke installeret eller ikke i PATH
+- Gå tilbage til Trin 0 og installer Python
+- Husk at sætte flueben ved "Add Python to PATH"
+
+#### ❌ "No module named 'requests'" (eller lignende)
+**Løsning**: Dependencies ikke installeret korrekt
+```bash
+cd safevibe
+python install.py
+```
+
+#### ❌ "FileNotFoundError: safevibe"
+**Løsning**: Du kører kommandoen fra forkert mappe
+- Du skal være i **projekt-roden** (ikke inde i safevibe mappen)
+- Brug `python safevibe/safevibe` (med mappe-præfix)
+
+#### ❌ Scanning finder ingen server
+**Løsning**: 
+1. Tjek at din dev-server KØR ER (`npm run dev`, osv.)
+2. Angiv URL manuelt: `python safevibe/safevibe --url http://localhost:3000`
+3. Eller spring dynamisk analyse over: `python safevibe/safevibe --no-dynamic`
+
+#### ❌ "Permission denied" (Mac/Linux)
+**Løsning**: Gør safevibe filen eksekverbar
+```bash
+chmod +x safevibe/safevibe
+```
+
+---
+
+### 🎓 Hurtig Recap
+
+```
+✅ Trin 0: Tjek Python (python --version)
+✅ Trin 1: Download Safevibe fra GitHub
+✅ Trin 2: Placer i projekt-roden
+✅ Trin 3: cd safevibe → python install.py
+✅ Trin 4: cd .. → start dit projekt (npm run dev, osv.)
+✅ Trin 5: python safevibe/safevibe
+```
+
+**Du er nu klar til at vibecode sikkert! 🛡️**
 
 ### ✅ Hvad får du?
 Safevibe giver dig:
@@ -289,8 +542,8 @@ Efter scanning får du en **Vibe Score** (0-100) baseret på fundne problemer:
 
 ```
 Start: 100 point
-- 20 point per KRITISK problem (API-nøgler, åbne databaser, osv.)
--  7 point per ADVARSEL (manglende headers, svage mønstre)
+- 15 point per KRITISK problem (API-nøgler, åbne databaser, osv.)
+-  5 point per ADVARSEL (manglende headers, svage mønstre)
 -  1 point per INFO (mindre anbefalinger)
 
 Minimum: 0 point
@@ -298,8 +551,8 @@ Minimum: 0 point
 
 **Eksempel:**
 ```
-3 kritiske problemer: 100 - (3 × 20) = 40 point (Bad Vibes)
-5 advarsler:          40 - (5 × 7) = 5 point (Toxic Vibes)
+3 kritiske problemer: 100 - (3 × 15) = 55 point (Sus Vibes)
+5 advarsler:          55 - (5 × 5) = 30 point (Bad Vibes)
 ```
 
 ---

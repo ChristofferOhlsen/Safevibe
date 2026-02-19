@@ -89,15 +89,15 @@ Du har **to muligheder** - vælg den nemmeste for dig:
 2. **Klik på den grønne "Code" knap** (øverst til højre)
 3. **Vælg "Download ZIP"**
 4. **Pak ZIP-filen ud** (højreklik → "Extract All" / "Pak ud")
-5. **Omdøb mappen** fra `Safevibe-main` til bare `safevibe` (lille s!)
+5. **Omdøb mappen** fra `Safevibe-main` til bare `Safevibe`
 
 #### **Mulighed B: Git Clone** (Hvis du har Git)
 
 ```bash
-git clone https://github.com/ChristofferOhlsen/Safevibe.git safevibe
+git clone https://github.com/ChristofferOhlsen/Safevibe.git
 ```
 
-✅ **Du har nu en mappe der hedder `safevibe`** (lille s!)
+✅ **Du har nu en mappe der hedder `Safevibe`**
 
 ---
 

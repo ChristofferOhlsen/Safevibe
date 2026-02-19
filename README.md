@@ -1,70 +1,405 @@
 # 🛡️ Safevibe
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+![Status](https://img.shields.io/badge/Status-Active-success.svg)
+![Made with ❤️ in Denmark](https://img.shields.io/badge/Made%20with%20%E2%9D%A4%EF%B8%8F%20in-Denmark-red.svg)
+
 **Lokal sikkerhedsscanner til moderne webprojekter.**  
 Kører 100% på din maskine – ingen data sendes til skyen.
 
+[Quick Start](#-quick-start) • [Hvorfor Safevibe?](#-hvorfor-safevibe) • [Features](#-hvad-scanner-safevibe) • [Advanced Usage](#-advanced-usage) • [Contributing](#-contributing)
+
+</div>
+
 ---
 
-## 🚀 Kom i gang
+## 🎯 Intro
 
-### 1. Installer afhængigheder (kun første gang)
+Safevibe er et **dansk sikkerhedsværktøj** skabt til at hjælpe danske udviklere med at vibecode sikkert. 
+
+I 2026 alene blev **64+ danske vibecodet projekter** fundet med kritiske sikkerhedssårbarheder - åbne databaser, eksponerede API-nøgler, manglende RLS (Row Level Security), og secrets committed til git. 
+
+**Safevibe er mit bidrag til en sikker vibecoding kultur i Danmark.** 🇩🇰
+
+---
+
+## 🚀 Quick Start
+
+### Trin 1: Installer afhængigheder
 ```bash
 python install.py
 ```
+Dette installerer alle dependencies lokalt i `/lib/` mappen (zero-footprint).
 
-### 2. Scan et projekt
+### Trin 2: Start dit projekt
+```bash
+# Eksempel for Next.js/Vite/React
+npm run dev
+
+# Eksempel for Django/Flask
+python manage.py runserver
+```
+
+### Trin 3: Scan dit projekt
 ```bash
 # Scan det nuværende projekt
-python .
+python safevibe
 
 # Scan et specifikt projekt
-python . /sti/til/dit/projekt
+python safevibe /sti/til/dit/projekt
 
 # Scan med en kørende dev-server
-python . /sti/til/projekt --url http://localhost:3000
+python safevibe /sti/til/projekt --url http://localhost:3000
 ```
+
+### ✅ Hvad får du?
+Safevibe giver dig:
+- **Vibe Score** (0-100) der viser din overordnede sikkerhed
+- **Detaljeret rapport** med fundne sårbarheder
+- **Prioriterede anbefalinger** (kritisk → info)
+- **Konkrete løsninger** til hvert problem
+
+---
+
+## 💡 Hvorfor Safevibe?
+
+### 🇩🇰 **DANSK**
+- Dokumentation og output på dansk
+- Skabt af og til danske udviklere
+- Forstår den danske vibecoding kultur
+
+### ✨ **NEMT**
+- 3 kommandoer og du er i gang
+- Ingen kompleks opsætning
+- Fungerer out-of-the-box
+
+### 🔒 **VIGTIGT**
+- 64+ danske projekter fundet med kritiske sårbarheder i 2026
+- Beskytter mod de 10 mest almindelige sikkerhedsfejl
+- Fanger problemer før de når produktion
+
+### 🏠 **LOKALT**
+- Kører 100% på din maskine
+- Ingen data sendes til skyen
+- Ingen tracking eller telemetri
+
+### 🔍 **DYBDEGÅENDE**
+- Kombinerer statisk + dynamisk analyse
+- Scanner både kildekode og kørende app
+- Tester aktivt for RLS-problemer i Supabase
+
+### 🤝 **MIT BIDRAG**
+- Open source værktøj til fællesskabet
+- Hjælper med at hæve sikkerhedsniveauet
+- Del af en større mission om sikker vibecoding
 
 ---
 
 ## 📋 Hvad scanner Safevibe?
 
-### 🔍 Statisk Analyse (kildekode)
-| Tjek | Beskrivelse |
-|------|-------------|
-| `.env` scanner | Finder eksponerede API-nøgler, passwords, JWT-tokens |
-| Kode scanner | `dangerouslySetInnerHTML`, `eval()`, hardcoded secrets, SQL-injektion |
-| Git scanner | Manglende `.gitignore`, secrets i commit-historik |
+Safevibe kører i **3 faser** og kombinerer **statisk** og **dynamisk** analyse for maksimal dækning.
 
-### ⚡ Dynamisk Analyse (live localhost)
-| Tjek | Beskrivelse |
-|------|-------------|
-| Header-First detektion | Identificerer Supabase/Firebase via HTTP headers |
-| Header analyse | CSP, CORS, X-Frame-Options, HSTS, X-Powered-By |
-| RLS Probe | Tester Supabase Row Level Security aktivt |
-| DB detektion | Finder database-URL og anon-nøgler i HTML/filer |
+### 📡 Fase 1: Detektion
 
----
+Safevibe analyserer dit projekt og identificerer:
 
-## 🎛️ Flagge
+| Hvad detekteres | Eksempler |
+|-----------------|-----------|
+| **Tech Stack** | Next.js, Vite, React, Vue, Django, Flask, osv. |
+| **Kørende Server** | Finder automatisk din dev-server på localhost |
+| **Database** | Supabase, Firebase, PostgreSQL, MongoDB, osv. |
+| **Frameworks** | 15+ frameworks understøttes |
 
-```
-python . [sti]          Sti til projektet (standard: .)
---url URL               Angiv server URL manuelt
---no-dynamic            Spring dynamisk analyse over
---no-rls                Spring RLS-probe over
---help                  Vis hjælp
-```
+**Hvordan?** Safevibe læser `package.json`, `requirements.txt`, `composer.json`, osv. og scanner aktive porte (3000, 5173, 8000, osv.).
 
 ---
 
-## 🎨 Vibe Score
+### 🔍 Fase 2: Statisk Analyse (Kildekode)
 
-| Score | Dom |
-|-------|-----|
-| 80–100 | ✅ Good Vibes |
-| 50–79 | ⚠️ Sus Vibes |
-| 25–49 | 😬 Bad Vibes |
-| 0–24 | 💀 Toxic Vibes |
+Safevibe scanner din kodebase **uden at køre den**.
+
+#### 📁 .env Scanner
+Finder eksponerede secrets i `.env` filer:
+
+| Hvad findes | Eksempler |
+|-------------|-----------|
+| **API-nøgler** | OpenAI (sk-), Anthropic (sk-ant-), GitHub (ghp_) |
+| **Database credentials** | Connection strings med brugernavn/password |
+| **JWT tokens** | Supabase anon keys, service_role keys |
+| **Payment keys** | Stripe LIVE keys (sk_live_), webhook secrets |
+| **Email services** | SendGrid, Mailgun, Resend tokens |
+| **Auth tokens** | Clerk, NextAuth secrets |
+| **Cloud services** | AWS keys (AKIA...), Firebase, Vercel tokens |
+| **40+ mønstre** | Dækker alle store platforme |
+
+**Bonus:** Tjekker om `.env.example` findes og om `.env.vault` (Dotenv Vault) er korrekt konfigureret.
+
+#### 💻 Kode Scanner
+Finder farlige mønstre i JavaScript, TypeScript, Python, PHP:
+
+| Kategori | Eksempler |
+|----------|-----------|
+| **XSS-risici** | `dangerouslySetInnerHTML`, `innerHTML`, `eval()` |
+| **SQL Injection** | String concatenation i SQL queries |
+| **Command Injection** | `exec()` med user input |
+| **Path Traversal** | `fs.readFile()` med request params |
+| **Hardcoded secrets** | API-nøgler direkte i koden |
+| **Svag kryptografi** | `Math.random()` til tokens, MD5/SHA1 |
+| **JWT problemer** | Tokens uden `expiresIn`, `algorithm: "none"` |
+| **CORS wildcards** | `Access-Control-Allow-Origin: *` |
+| **SSL-deaktivering** | `rejectUnauthorized: false` |
+| **50+ checks** | Dækker OWASP Top 10 |
+
+#### 🗂️ Git Scanner
+Analyserer git-konfiguration og historik:
+
+| Hvad tjekkes | Hvorfor |
+|--------------|---------|
+| **.gitignore dækning** | Sikrer at `.env`, `*.pem`, osv. er ignoreret |
+| **Git historik** | Scanner seneste 50 commits for secrets |
+| **Tracked .env files** | Finder `.env` filer der allerede er committed |
+| **Anbefalinger** | Foreslår `git filter-repo` hvis nødvendigt |
+
+#### 🔐 Hardcoded Secret Scanner
+**Ny feature!** Sammenligner alle værdier fra dine `.env` filer med din kildekode:
+
+```javascript
+// ❌ BAD: Hardcoded secret fra .env
+const client = createClient("https://xyz.supabase.co", "eyJhbGci...")
+                                                        ↑ denne værdi kommer fra .env!
+
+// ✅ GOOD: Brug env-variabel
+const client = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
+```
+
+Scanner **alle filtyper** inkl. `.json`, `.toml`, `.yaml`, `docker-compose.yml`, osv.
+
+---
+
+### ⚡ Fase 3: Dynamisk Analyse (Live)
+
+Safevibe analyserer din **kørende applikation** på localhost.
+
+#### 🌐 HTTP Header Analyse
+Tjekker vigtige sikkerhedsheaders:
+
+| Header | Beskyttelse |
+|--------|-------------|
+| **Content-Security-Policy** | XSS-beskyttelse |
+| **X-Frame-Options** | Clickjacking-beskyttelse |
+| **Strict-Transport-Security** | HTTPS enforcement |
+| **Access-Control-Allow-Origin** | CORS konfiguration |
+| **X-Content-Type-Options** | MIME-sniffing beskyttelse |
+| **Cross-Origin-* policies** | Spectre-angreb beskyttelse |
+| **Cookie security** | HttpOnly, Secure, SameSite |
+| **Info-lækage** | Server, X-Powered-By headers |
+
+**Bonus:** Identificerer automatisk Supabase, Firebase, Vercel, Netlify via headers.
+
+#### 🗄️ Database Detektion (4-lags hybrid)
+
+Safevibe bruger en **avanceret 4-lags detektor** til at finde databaser:
+
+1. **Header-First scanning** - Analyserer HTTP headers fra live server
+2. **Prisma/Drizzle parsing** - Læser `schema.prisma` og drizzle config
+3. **Env var NAVNE** - Matcher variabelnavne (f.eks. `SUPABASE_URL`)
+4. **Env var VÆRDIER** - Regex på connection strings
+
+**Understøtter 20+ databaser:**
+- **Cloud:** Supabase, Firebase, Neon, PlanetScale, Turso, Upstash, Convex, Xata
+- **Traditionelle:** PostgreSQL, MySQL, MongoDB, Redis, SQLite, MS SQL
+- **ORMs:** Prisma, Drizzle, TypeORM, Sequelize
+- **Backend-as-a-Service:** Hasura, Appwrite, PocketBase, Fauna
+
+#### 🚨 RLS Probe (Supabase)
+
+**Den mest kraftfulde feature!** Safevibe tester aktivt om Row Level Security (RLS) er aktiveret på dine Supabase-tabeller.
+
+**Hvordan virker det?**
+
+1. **Finder alle nøgler** i dine `.env` filer (anon, service_role, osv.)
+2. **Identificerer tabeller** fra din kildekode (`.from('users')`, `prisma.profiles`, osv.)
+3. **Tester 4 auth-kombinationer** per tabel:
+   - `apikey + Authorization: Bearer` (standard)
+   - `apikey` alene
+   - `Authorization: Bearer` alene  
+   - Ingen auth (worst case)
+4. **Rapporterer kritiske fund** hvis data er tilgængelig uden RLS
+
+```
+🚨 KRITISK: Tabel 'users' ÅBEN UDEN AUTH
+→ Tabellen returnerer data UDEN nogen form for autentificering
+→ Alle på internettet kan læse dine brugere
+→ Aktiver RLS i Supabase Dashboard → Authentication → Policies
+```
+
+**Understøtter:**
+- ✅ Supabase Cloud (`*.supabase.co`)
+- ✅ Self-hosted Supabase
+- ✅ Anon keys, service_role keys, custom JWTs
+- ✅ Automatisk JWT role-detection via base64 decode
+
+**Kritiske tabeller testet automatisk:**
+`users`, `profiles`, `accounts`, `orders`, `payments`, `messages`, `admin`, `sessions`, `api_keys`, osv.
+
+#### 🌐 Browser Probe (Playwright)
+
+**Avanceret network + DOM scanning** med headless Chrome:
+
+**Hvad scannes:**
+
+| Sted | Hvad findes |
+|------|-------------|
+| **Network requests** | API-nøgler i headers, query strings, request bodies |
+| **Response bodies** | Secrets i JSON/JavaScript responses |
+| **Inline scripts** | Hardcoded secrets i `<script>` tags |
+| **Meta tags** | API-nøgler i meta-attributter |
+| **Data-attributes** | `data-key`, `data-token`, osv. |
+| **Global state** | `window.__NEXT_DATA__`, `window.__NUXT__` |
+| **window.ENV** | Eksponerede env-variabler i frontend |
+
+**Dynamisk .env-matching:**
+Browser-proben bruger **alle dine .env-værdier** til at scanne netværkstrafik og DOM dynamisk:
+
+```
+✅ Browser-probe: 47 .env-værdier matchet mod netværkstrafik
+🔴 KRITISK: SUPABASE_SERVICE_ROLE_KEY eksponeret i response body
+```
+
+---
+
+## 🎨 Vibe Score System
+
+Efter scanning får du en **Vibe Score** (0-100) baseret på fundne problemer:
+
+| Score | Vurdering | Betydning |
+|-------|-----------|-----------|
+| **80–100** | ✅ **Good Vibes** | Godt sikkerhedsniveau - mindre justeringer |
+| **50–79** | ⚠️ **Sus Vibes** | Nogle bekymringer - bør fixes |
+| **25–49** | 😬 **Bad Vibes** | Alvorlige problemer - fix ASAP |
+| **0–24** | 💀 **Toxic Vibes** | Kritisk usikker - må ikke i produktion |
+
+### Hvordan beregnes scoren?
+
+```
+Start: 100 point
+- 20 point per KRITISK problem (API-nøgler, åbne databaser, osv.)
+-  7 point per ADVARSEL (manglende headers, svage mønstre)
+-  1 point per INFO (mindre anbefalinger)
+
+Minimum: 0 point
+```
+
+**Eksempel:**
+```
+3 kritiske problemer: 100 - (3 × 20) = 40 point (Bad Vibes)
+5 advarsler:          40 - (5 × 7) = 5 point (Toxic Vibes)
+```
+
+---
+
+## 🎛️ Advanced Usage
+
+### Kommandolinje Flags
+
+```bash
+# Scan specifik mappe
+python safevibe /sti/til/projekt
+
+# Angiv URL manuelt (hvis auto-detection fejler)
+python safevibe --url http://localhost:4000
+
+# Spring dynamisk analyse over (kun statisk)
+python safevibe --no-dynamic
+
+# Spring RLS-probe over
+python safevibe --no-rls
+
+# Spring browser-probe over
+python safevibe --no-browser
+
+# Kombiner flags
+python safevibe /min/app --url http://localhost:3001 --no-browser
+
+# Vis hjælp
+python safevibe --help
+```
+
+### Use Cases
+
+#### 1. Full Scan (anbefalet)
+```bash
+# Start din app først
+npm run dev
+
+# Kør fuld scanning
+python safevibe
+```
+
+#### 2. Kun Statisk Analyse
+```bash
+# Ingen server nødvendig
+python safevibe --no-dynamic
+```
+
+#### 3. CI/CD Integration
+```bash
+# Exit code 1 hvis kritiske problemer findes
+python safevibe /project --no-browser
+```
+
+#### 4. Custom Port
+```bash
+# Din app kører på port 4321
+python safevibe --url http://localhost:4321
+```
+
+#### 5. Scan Produktionsbranch
+```bash
+git checkout production
+python safevibe --no-dynamic  # Statisk scan kun
+```
+
+---
+
+## 🛠️ Understøttede Teknologier
+
+### Frameworks (15+)
+
+| Frontend | Backend | Full-Stack |
+|----------|---------|------------|
+| React | Express | Next.js |
+| Vue | Flask | Nuxt |
+| Svelte | FastAPI | SvelteKit |
+| Angular | Django | Remix |
+| Solid | Nest.js | Astro |
+| Qwik | Sails.js | T3 Stack |
+
+### Databaser (20+)
+
+| Type | Teknologier |
+|------|-------------|
+| **Cloud Postgres** | Supabase, Neon, PlanetScale, CockroachDB |
+| **Realtime** | Firebase, Convex, Appwrite, PocketBase |
+| **Edge/Serverless** | Turso (SQLite), Upstash (Redis), Xata |
+| **Traditionel** | PostgreSQL, MySQL, MongoDB, Redis, SQLite |
+| **Backend-as-a-Service** | Hasura, Fauna |
+| **ORMs** | Prisma, Drizzle, TypeORM, Sequelize |
+
+### Programmeringssprog
+
+| Sprog | Filtyper |
+|-------|----------|
+| **JavaScript/TypeScript** | `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs` |
+| **Frameworks** | `.vue`, `.svelte` |
+| **Python** | `.py` |
+| **PHP** | `.php` |
 
 ---
 
@@ -72,34 +407,292 @@ python . [sti]          Sti til projektet (standard: .)
 
 ```
 safevibe/
-├── __main__.py              # Entry point
-├── install.py               # Installér afhængigheder
-├── lib/                     # Vendored deps (auto-genereret)
-└── engine/
-    ├── cli.py               # Hoved-CLI og rapport
-    ├── detector.py          # Port & stack detektion
-    ├── static/
-    │   ├── env_scanner.py   # .env analyse
-    │   ├── code_scanner.py  # Kildekode analyse
-    │   └── git_scanner.py   # Git konfiguration
-    └── dynamic/
-        ├── header_analyzer.py  # HTTP header analyse
-        ├── db_detector.py      # Database detektion
-        └── rls_prober.py       # Supabase RLS probe
+├── README.md              # Denne fil
+├── __main__.py            # Entry point - bootstrap for lib/
+├── install.py             # Dependency installer (zero-footprint)
+├── lib/                   # Vendored dependencies (auto-genereret)
+│   ├── requests/
+│   ├── rich/
+│   ├── beautifulsoup4/
+│   ├── playwright/
+│   └── browsers/          # Chromium (headless)
+└── engine/                # Core scanning engine
+    ├── __init__.py
+    ├── cli.py             # Hoved-CLI og rapport generator
+    ├── detector.py        # Port & tech-stack detektion
+    ├── static/            # Statisk analyse
+    │   ├── __init__.py
+    │   ├── env_scanner.py    # .env secret detection (40+ mønstre)
+    │   ├── code_scanner.py   # Kildekode analyse (50+ checks)
+    │   └── git_scanner.py    # Git historik + .gitignore
+    └── dynamic/           # Dynamisk analyse
+        ├── __init__.py
+        ├── header_analyzer.py  # HTTP header checks
+        ├── db_detector.py      # 4-lags database detektion
+        ├── rls_prober.py       # Supabase RLS probe
+        └── browser_probe.py    # Playwright network interception
+```
+
+### Hvordan virker arkitekturen?
+
+1. **`__main__.py`** - Bootstrap script der:
+   - Tilføjer `/lib/` til Python path
+   - Sætter Playwright browser path
+   - Kalder `engine.cli.run()`
+
+2. **`install.py`** - Installerer alt til `/lib/`:
+   - Core dependencies (requests, rich, beautifulsoup4, playwright)
+   - Chromium browser (~200MB) til `/lib/browsers/`
+   - Zero-footprint - ingen global pip install
+
+3. **`engine/`** - Scanning engine:
+   - **`cli.py`** - Orkestrerer alle scannere, viser rapport
+   - **`detector.py`** - Smart port/stack detektion
+   - **`static/`** - Statiske scannere (kode, env, git)
+   - **`dynamic/`** - Dynamiske analysers (headers, DB, RLS, browser)
+
+---
+
+## ⚠️ False Positives
+
+Safevibe er designet til at være præcis, men false positives kan forekomme.
+
+### Almindelige False Positives
+
+#### 1. `.env` Findings
+**Problem:** Safevibe rapporterer secrets i `.env` filer  
+**Hvorfor:** `.env` filer **skal** indeholde secrets - det er deres formål  
+**Løsning:** Dette er markeret som `INFO` (ikke kritisk). Fokuser på:
+- Er `.env` i `.gitignore`? ✅
+- Er secrets hardcoded i kildekode? ❌
+
+#### 2. Public API-nøgler
+**Problem:** `NEXT_PUBLIC_SUPABASE_ANON_KEY` flagges  
+**Hvorfor:** Anon keys **må** være i frontend - det er designet sådan  
+**Løsning:** Tjek at:
+- RLS er aktiveret ✅
+- Service_role key IKKE er i frontend ❌
+
+#### 3. Development URLs
+**Problem:** `http://localhost:3000` flagges som ukrypteret  
+**Hvorfor:** Localhost HTTP er OK under udvikling  
+**Løsning:** Ignorer for development - fix i produktion
+
+#### 4. Eksempel-kode i kommentarer
+**Problem:** Kommentarer med `eval()` eksempler flagges  
+**Hvorfor:** Static analyse ser ikke forskel på kode og kommentarer  
+**Løsning:** Flyt eksempler til dokumentation
+
+### Hvordan håndteres False Positives?
+
+1. **Læs severity-niveauet:**
+   - `KRITISK` (🔴) - skal fixes
+   - `ADVARSEL` (🟡) - bør fixes
+   - `INFO` (🔵) - FYI / context
+
+2. **Tjek kontekst:**
+   - Er det i `.env` (OK) eller kildekode (BAD)?
+   - Er det development (OK) eller production (BAD)?
+   - Er det public key (OK) eller secret key (BAD)?
+
+3. **Brug `--no-*` flags:**
+   ```bash
+   # Spring specifikke checks over
+   python safevibe --no-rls --no-browser
+   ```
+
+4. **Rapporter hvis det er en reel bug:**
+   - Åbn en issue på GitHub
+   - Inkluder context og kodeeksempel
+
+---
+
+## 🤝 Contributing
+
+Safevibe er open source og modtager gerne bidrag!
+
+### Hvordan bidrager du?
+
+#### 1. Rapporter Bugs
+- Åbn en **GitHub Issue**
+- Beskriv problemet (hvilken scanning-fase, output, osv.)
+- Inkluder (anonymiseret) kode hvis muligt
+
+#### 2. Foreslå Features
+- Åbn en **Feature Request** issue
+- Forklar use case og hvorfor det er vigtigt
+- Link til dokumentation hvis relevant
+
+#### 3. Tilføj Nye Secret-mønstre
+Safevibe bruger regex til at finde secrets. Tilføj til `engine/static/env_scanner.py`:
+
+```python
+# FORMAT_PATTERNS - matcher værdier
+(r"ditt_regex_pattern", "Beskrivelse", "critical"),
+
+# KEY_PATTERNS - matcher nøglenavne
+(r"(?i)^DITT_PATTERN\s*=\s*.{8,}", "Beskrivelse", "critical"),
+```
+
+#### 4. Tilføj Nye Kode-checks
+Tilføj til `engine/static/code_scanner.py`:
+
+```python
+(r"farligt_mønster", "Beskrivelse", "critical", None),  # Alle sprog
+(r"react_mønster", "Beskrivelse", "critical", "React"),  # Kun React
+```
+
+#### 5. Udvid Database-detektion
+Tilføj til `engine/dynamic/db_detector.py`:
+
+```python
+# ENV_KEY_DB_PATTERNS - nøglenavne
+(re.compile(r"(?i)ditdb.*url", re.I), "DitDB"),
+
+# ENV_VALUE_PATTERNS - connection strings
+(re.compile(r"ditdb://[^\s\"']+", re.I), "DitDB", "url"),
+```
+
+### Development Setup
+
+```bash
+# Clone repository
+git clone https://github.com/ChristofferOhlsen/Safevibe.git
+cd Safevibe
+
+# Installer dependencies
+python install.py
+
+# Test ændringer
+python safevibe /test/projekt
+
+# Kør mod Safevibe selv (self-scan)
+python safevibe .
+```
+
+### Code Style
+- Python 3.8+ kompatibel
+- Docstrings på dansk
+- Kommentarer på dansk
+- Følg eksisterende struktur
+
+---
+
+## 🔒 Privatliv & Sikkerhed
+
+### Privacy-garantier
+
+✅ **100% Lokalt** - Alt kører på din maskine  
+✅ **Ingen Telemetri** - Ingen tracking eller analytics  
+✅ **Ingen Cloud Upload** - Ingen kode/data sendes væk  
+✅ **Zero-footprint** - Dependencies installeres kun i `/lib/`  
+✅ **Åben Kildekode** - Du kan verificere alt  
+
+### Hvad ser Safevibe?
+
+| Data | Hvor | Hvad sker |
+|------|------|-----------|
+| **Kildekode** | Lokale filer | Scannes for mønstre - gemmes ikke |
+| **.env filer** | Lokale filer | Scannes - værdier maskeres i output |
+| **Git historik** | `.git/` folder | Scannes lokalt - sendes ikke væk |
+| **HTTP traffic** | Localhost | Interceptes - kun metadata gemmes |
+| **Database** | Localhost/cloud | Testes med READ-only queries |
+
+### Hvordan maskeres secrets?
+
+```
+❌ Output UDEN maskering:
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS...
+
+✅ Output MED maskering:
+SUPABASE_KEY=***
+Nøgle: eyJhbGci... (første 20 tegn)
+```
+
+### Sikkerhed i RLS Probe
+
+RLS-proben tester **kun med READ queries** (`GET /rest/v1/table?limit=1`):
+
+- ❌ Ingen writes (`INSERT`, `UPDATE`, `DELETE`)
+- ❌ Ingen schema-ændringer (`ALTER`, `DROP`)
+- ✅ Kun `SELECT` med `limit=1`
+- ✅ Stopper ved første fund
+
+---
+
+## 📊 Sammenligning med Andre Værktøjer
+
+| Feature | Safevibe | Snyk | GitGuardian | Semgrep |
+|---------|----------|------|-------------|---------|
+| **Dansk** | ✅ | ❌ | ❌ | ❌ |
+| **Gratis** | ✅ | Begrænset | Begrænset | ✅ |
+| **100% Lokalt** | ✅ | ❌ | ❌ | ✅ |
+| **Dynamisk Analyse** | ✅ | ❌ | ❌ | ❌ |
+| **RLS Probe** | ✅ | ❌ | ❌ | ❌ |
+| **Browser Probe** | ✅ | ❌ | ❌ | ❌ |
+| **Database Detektion** | ✅ (20+) | Begrænset | ❌ | ❌ |
+| **Git Historik** | ✅ | ✅ | ✅ | ❌ |
+| **Zero Setup** | ✅ | ❌ | ❌ | Delvist |
+
+**Safevibe's unikke værdi:**
+- 🇩🇰 Eneste danske sikkerhedsværktøj
+- 🔍 Kombinerer statisk + dynamisk analyse
+- 🚨 Aktivt tester Supabase RLS
+- 🌐 Browser network interception
+- 🏠 100% privatliv - ingen cloud
+
+---
+
+## 📜 License & Support
+
+### License
+MIT License - fri til kommerciel og privat brug.
+
+Se [LICENSE](LICENSE) for detaljer.
+
+### Support
+- **GitHub Issues** - Bug reports og feature requests
+- **Dokumentation** - Denne README
+- **Email** - [dit-email@example.com] (opdater dette)
+
+### Roadmap
+- [ ] GitHub Actions integration
+- [ ] JSON/SARIF output format
+- [ ] VSCode extension
+- [ ] Firebase Rules validation
+- [ ] Custom regex patterns via config
+- [ ] HTML rapport-generator
+
+---
+
+## 🙏 Tak til
+
+- Alle danske udviklere der vibecoder sikkert
+- Open source biblioteker: `requests`, `rich`, `playwright`, `beautifulsoup4`
+- Supabase for fantastisk dokumentation om RLS
+
+---
+
+## 📈 Stats
+
+```
+🔍 40+ secret-mønstre (statisk)
+💻 50+ kode-checks (OWASP Top 10)
+🗄️ 20+ database-teknologier
+⚡ 4-lags hybrid database-detektion
+🚨 RLS probe (4 auth-kombinationer × N tabeller)
+🌐 Browser probe (network + DOM + .env-matching)
+🇩🇰 100% dansk udviklet
 ```
 
 ---
 
-## 🔒 Privatliv
+<div align="center">
 
-- Kører **100% lokalt** i Python
-- Ingen kode, API-nøgler eller database-strukturer forlader din maskine
-- Anon-nøgler maskeres i output
+**Vibecode sikkert. 🛡️**
 
----
+Made with ❤️ in Denmark 🇩🇰
 
-## 🛠️ Understøttede teknologier
+[GitHub](https://github.com/ChristofferOhlsen/Safevibe) • [Issues](https://github.com/ChristofferOhlsen/Safevibe/issues) • [Contributing](#-contributing)
 
-**Frameworks:** Next.js, Vite, React, Vue, Svelte, Nuxt, Astro, Remix  
-**Databaser:** Supabase (inkl. RLS probe), Firebase, PostgreSQL, MongoDB  
-**Sprog:** JavaScript, TypeScript, JSX, TSX, Vue, Svelte
+</div>

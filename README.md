@@ -110,7 +110,7 @@ git clone https://github.com/ChristofferOhlsen/Safevibe.git
 ```
 mit-projekt/                    ← DIN PROJEKT-ROD
 │
-├── safevibe/                  ← PLACER SAFEVIBE MAPPEN HER!
+├── Safevibe/                  ← PLACER SAFEVIBE MAPPEN HER!
 │   ├── engine/
 │   │   ├── cli.py
 │   │   ├── detector.py
@@ -120,7 +120,7 @@ mit-projekt/                    ← DIN PROJEKT-ROD
 │   ├── __main__.py
 │   ├── install.py
 │   ├── README.md
-│   └── safevibe               ← Kørbar fil
+│   └── safevibe               ← Kørbar fil (lille s)
 │
 ├── src/                       ← DIT PROJEKTS KODE
 │   ├── app/
@@ -141,19 +141,24 @@ mit-projekt/                    ← DIN PROJEKT-ROD
    - Normalt hvor din `.env` fil ligger
    - Mappen hvor du kører `npm run dev` eller `python manage.py runserver`
 
-2. **Flyt/kopier** `safevibe` mappen **direkte ind i projekt-roden**
+2. **Flyt/kopier** `Safevibe` mappen **direkte ind i projekt-roden**
 
 3. **Tjek at det er rigtigt**:
    ```bash
    # Naviger til din projekt-rod i terminalen
    cd /sti/til/mit-projekt
    
-   # Tjek at safevibe mappen findes
-   dir safevibe        # Windows
-   ls safevibe         # Mac/Linux
+   # Tjek at Safevibe mappen findes
+   dir Safevibe        # Windows
+   ls Safevibe         # Mac/Linux
    ```
    
    Du skal se: `engine`, `install.py`, `README.md`, osv.
+
+💡 **Pro Tip - Åbn Terminal Fra Stifinder:**
+- **Windows**: Højreklik i mappen → "Åbn i terminal" eller "Open in Terminal"
+- **Mac**: Højreklik i mappen → "Tjenester" → "Ny Terminal ved mappe"
+- **Linux**: Højreklik i mappen → "Åbn i terminal"
 
 ✅ **Godt klaret! Safevibe er nu placeret korrekt.**
 
@@ -161,15 +166,21 @@ mit-projekt/                    ← DIN PROJEKT-ROD
 
 ### ⚙️ Trin 3: Installer Safevibe Afhængigheder
 
-**Navigér IND i safevibe mappen** og kør installationen:
+**Navigér IND i Safevibe mappen** og kør installationen:
 
 ```bash
-# Fra din projekt-rod, gå ind i safevibe mappen
-cd safevibe
+# Fra din projekt-rod, gå ind i Safevibe mappen
+cd Safevibe
 
 # Kør installation
 python install.py
 ```
+
+💡 **Pro Tip - Nemmere Metode:**
+I stedet for at bruge `cd` kommandoen kan du:
+1. Åbn Stifinder/Finder og navigér til **Safevibe mappen** (inde i dit projekt)
+2. Højreklik i mappen → "Åbn i terminal" (Windows/Linux) eller "Ny Terminal ved mappe" (Mac)
+3. Kør bare: `python install.py`
 
 #### ⏳ Hvad Sker Der?
 
@@ -229,24 +240,30 @@ cd /sti/til/mit-projekt
 
 ```bash
 # Scan nuværende projekt (fuld scanning)
-python safevibe/safevibe
+python Safevibe/safevibe
 
-# ELLER hvis du stadig er i safevibe mappen:
+# ELLER hvis du stadig er i Safevibe mappen:
 cd ..
-python safevibe/safevibe
+python Safevibe/safevibe
 ```
+
+💡 **Pro Tip - Nemmere Metode:**
+I stedet for at bruge `cd` kommandoen kan du:
+1. Åbn Stifinder/Finder og navigér til din **projekt-rod mappe**
+2. Højreklik i mappen → "Åbn i terminal" (Windows/Linux) eller "Ny Terminal ved mappe" (Mac)
+3. Kør bare: `python Safevibe/safevibe`
 
 #### 🎯 Scanning Modes:
 
 ```bash
 # Scan et specifikt projekt
-python safevibe/safevibe /sti/til/andet/projekt
+python Safevibe/safevibe /sti/til/andet/projekt
 
 # Scan med kørende server på custom port
-python safevibe/safevibe --url http://localhost:4000
+python Safevibe/safevibe --url http://localhost:4000
 
 # Kun statisk analyse (ingen server nødvendig)
-python safevibe/safevibe --no-dynamic
+python Safevibe/safevibe --no-dynamic
 ```
 
 ---
@@ -272,25 +289,25 @@ Efter scanning viser Safevibe:
 #### ❌ "No module named 'requests'" (eller lignende)
 **Løsning**: Dependencies ikke installeret korrekt
 ```bash
-cd safevibe
+cd Safevibe
 python install.py
 ```
 
 #### ❌ "FileNotFoundError: safevibe"
 **Løsning**: Du kører kommandoen fra forkert mappe
-- Du skal være i **projekt-roden** (ikke inde i safevibe mappen)
-- Brug `python safevibe/safevibe` (med mappe-præfix)
+- Du skal være i **projekt-roden** (ikke inde i Safevibe mappen)
+- Brug `python Safevibe/safevibe` (med mappe-præfix)
 
 #### ❌ Scanning finder ingen server
 **Løsning**: 
-1. Tjek at din dev-server KØR ER (`npm run dev`, osv.)
-2. Angiv URL manuelt: `python safevibe/safevibe --url http://localhost:3000`
-3. Eller spring dynamisk analyse over: `python safevibe/safevibe --no-dynamic`
+1. Tjek at din dev-server KØRER (`npm run dev`, osv.)
+2. Angiv URL manuelt: `python Safevibe/safevibe --url http://localhost:3000`
+3. Eller spring dynamisk analyse over: `python Safevibe/safevibe --no-dynamic`
 
 #### ❌ "Permission denied" (Mac/Linux)
 **Løsning**: Gør safevibe filen eksekverbar
 ```bash
-chmod +x safevibe/safevibe
+chmod +x Safevibe/safevibe
 ```
 
 ---
@@ -301,9 +318,9 @@ chmod +x safevibe/safevibe
 ✅ Trin 0: Tjek Python (python --version)
 ✅ Trin 1: Download Safevibe fra GitHub
 ✅ Trin 2: Placer i projekt-roden
-✅ Trin 3: cd safevibe → python install.py
+✅ Trin 3: cd Safevibe → python install.py
 ✅ Trin 4: cd .. → start dit projekt (npm run dev, osv.)
-✅ Trin 5: python safevibe/safevibe
+✅ Trin 5: python Safevibe/safevibe
 ```
 
 **Du er nu klar til at vibecode sikkert! 🛡️**

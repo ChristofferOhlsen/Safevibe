@@ -39,9 +39,9 @@ SEVERITY_STYLES = {
 }
 
 SCORE_PENALTIES = {
-    "critical": 15,
-    "warning":  5,
-    "info":     1,
+    "critical": 10,
+    "warning":  2,
+    "info":     0,
 }
 
 # DB-specifikke advarsler baseret på type

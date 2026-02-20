@@ -90,8 +90,28 @@ INTERESTING_API_PATTERNS = [
     (re.compile(r"/api/"), "API endpoint"),
 ]
 
-# Minimumslængde for at en .env-værdi er interessant nok til dynamisk scanning
-_MIN_ENV_VALUE_LEN = 8
+# Minimumslængde for at en .env-værdi er interessant nok til dynamisk scanning.
+# 16 tegn reducerer false positives fra korte almene strenge ("postgres", "admin" osv.)
+_MIN_ENV_VALUE_LEN = 16
+
+# Variabelnavne der er kendte "mode/environment"-indikatorer – aldrig secrets.
+# Bundlers (Vite, webpack, Next.js) inliner disse med vilje i JS-bundlet.
+_NON_SECRET_VAR_NAMES = {
+    "NODE_ENV", "APP_ENV", "VITE_MODE", "APP_MODE", "MODE",
+    "ENVIRONMENT", "ENV", "BUILD_ENV", "REACT_APP_ENV",
+    "NEXT_PUBLIC_APP_ENV", "CF_PAGES_BRANCH", "VERCEL_ENV",
+    "CI", "DEBUG", "PORT", "HOST", "LANG", "TZ",
+    "NEXT_PUBLIC_ENV", "NUXT_ENV", "GATSBY_ENV",
+}
+
+# Almene strenge der ikke er secrets og som optræder overalt i JS-bundler –
+# ville give konstante false positives hvis de matches.
+_NON_SECRET_VALUES = {
+    "development", "production", "test", "staging", "local",
+    "preview", "true", "false", "yes", "no", "1", "0",
+    "dev", "prod", "none", "info", "debug", "warn", "error",
+    "localhost", "http", "https", "enabled", "disabled",
+}
 
 
 # Regex der matcher credentials embeddet i en URL (f.eks. postgres://user:pass@host)
@@ -126,14 +146,27 @@ def _build_env_patterns(env_values: dict) -> list[tuple]:
         value = meta.get("value", "")
         source_file = meta.get("source", ".env")
 
-        # Ignorer korte, trivielle eller duplikerede værdier
+        var_upper = var_name.upper()
+
+        # ── Skip kendte non-secret variabelnavne (environment-mode indikatorer) ──
+        # NODE_ENV, APP_ENV m.fl. er beregnet til at fremgå i browser-bundlet –
+        # bundlers inliner dem med vilje. At finde "production" i et JS-bundle
+        # er 100% forventet adfærd, ikke en sikkerhedsfejl.
+        if var_upper in _NON_SECRET_VAR_NAMES:
+            continue
+
+        # ── Skip trivielle værdier der er alment brugte ord ─────────────────
+        # Strenge som "development", "production", "true" m.fl. optræder naturligt
+        # i enhver JS-kodebase og vil give konstante false positives.
+        if value.lower() in _NON_SECRET_VALUES:
+            continue
+
+        # ── Ignorer korte, trivielle eller duplikerede værdier ───────────────
         if not value or len(value) < _MIN_ENV_VALUE_LEN:
             continue
         if value in seen_values:
             continue
         seen_values.add(value)
-
-        var_upper = var_name.upper()
 
         # ── URL-variabler uden credentials springes over ────────────────────
         # En URL der bruges som API-endepunkt vil naturligt fremgå i netværks-

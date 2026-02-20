@@ -28,6 +28,7 @@ from engine.dynamic.header_analyzer import analyze_headers
 from engine.dynamic.db_detector import detect_database, get_all_databases, extract_all_env_values  # noqa: F401 (bruges via variabel)
 from engine.dynamic.rls_prober import run_rls_probe
 from engine.dynamic.browser_probe import run_browser_probe, PLAYWRIGHT_AVAILABLE
+from engine.report import generate_report
 
 console = Console() if RICH_AVAILABLE else None
 
@@ -508,5 +509,19 @@ def run(default_path: str = "."):
         print(f"  Vibe Score: {score}/100  {verdict}")
         print(f"  🔴 Kritiske: {critical_count}  🟡 Advarsler: {warning_count}  🔵 Info: {info_count}")
         print(f"  Scan afsluttet på {elapsed:.1f}s\n{'='*60}\n")
+
+    # Generate HTML report
+    try:
+        report_path = generate_report(all_findings, score, verdict, project_path, stack, elapsed)
+        if RICH_AVAILABLE:
+            console.print()
+            console.print(
+                f"  [dim]📄 HTML Rapport:[/dim] [link=file://{report_path}][cyan]{report_path}[/cyan][/link]"
+            )
+            console.print()
+        else:
+            print(f"\n  📄 HTML Rapport: {report_path}\n")
+    except Exception as e:
+        _print(f"  [yellow]⚠️  Kunne ikke generere HTML rapport: {e}[/yellow]")
 
     sys.exit(1 if critical_count > 0 else 0)

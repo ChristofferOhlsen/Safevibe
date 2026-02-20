@@ -335,12 +335,52 @@ def scan_env_files(project_path: str) -> list[dict]:
                         })
                     break
 
-    # ─── .env findings er altid "info" – de tæller ikke ned i score ────────
-    # .env filer er BEREGNET til at indeholde nøgler. Det er kun farligt hvis
-    # nøglerne ender i git, bundlet kode eller browser-traffic.
+    # ─── Post-process findings: ret beskrivelser til at afspejle .env-kontekst ─
+    # Secrets i .env er BEREGNET til at være der. Det er kun farligt hvis:
+    #   1. .env er committed til git (tjekkes separat af git_scanner)
+    #   2. En nøgle har NEXT_PUBLIC_ prefix (eksponeres i klientbundlet)
+    #   3. En service_role nøgle er eksponeret via NEXT_PUBLIC_
     for f in findings:
-        f["severity"] = "info"
         f["env_file"] = True  # Marker at det er et .env-fund (ikke kode-fund)
+
+        detail = f.get("detail", "")
+        key_name = detail.split("=")[0].strip().upper()
+        desc = f["description"]
+
+        # Ret vildledende sprog fra mønstre skrevet til kildekode-kontekst:
+        # "hardcodet" => antyder kildekode-eksponering, ikke .env
+        # "ALDRIG i frontend" => antyder funnet direkt i frontend, ikke .env
+        desc = desc.replace("hardcodet", "fundet i .env")
+        desc = desc.replace(" – ALDRIG i frontend", "")
+
+        if key_name.startswith("NEXT_PUBLIC_"):
+            # NEXT_PUBLIC_ variabler bundtes ind i klientside-JavaScript.
+            # Secrets med dette prefix er REELT eksponerede i browseren.
+            is_service_role = (
+                "service_role" in key_name.lower()
+                or "service_role" in desc.lower()
+            )
+            if is_service_role:
+                # Kritisk: admin-nøgle eksponeret i klientbundlet
+                f["severity"] = "critical"
+                f["description"] = (
+                    "service_role nøgle med NEXT_PUBLIC_ prefix i .env – "
+                    "eksponeres i klientbundlet og giver admin-adgang til databasen"
+                )
+            else:
+                # Advarsel: enhver secret med NEXT_PUBLIC_ er synlig i browser
+                f["severity"] = "warning"
+                f["description"] = (
+                    desc
+                    + " – ADVARSEL: NEXT_PUBLIC_ variabler eksponeres i klientbundlet"
+                )
+        else:
+            # Normal .env secret – det er det rigtige sted at opbevare nøgler.
+            # Sæt severity til "info" og tilføj standard-note om gitignore.
+            f["severity"] = "info"
+            if "gitignored" not in desc:
+                desc += " – sørg for at .env er gitignored"
+            f["description"] = desc
 
     return findings
 

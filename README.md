@@ -957,7 +957,7 @@ Se [LICENSE](LICENSE) for detaljer.
 - [ ] VSCode extension
 - [ ] Firebase Rules validation
 - [ ] Custom regex patterns via config
-- [ ] HTML rapport-generator
+- [X] HTML rapport-generator
 
 ---
 

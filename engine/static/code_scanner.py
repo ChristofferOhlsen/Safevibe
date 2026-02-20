@@ -806,14 +806,10 @@ CODE_CHECKS = [
      "Prototype Pollution: deepmerge med user input – prototype pollution risiko",
      "critical", None),
 
-    # ── Insecure Direct Access til process.env i Frontend ─────────────────────
-    (r"process\.env\.\w+(?![^;]*(?:NEXT_PUBLIC|VITE_|REACT_APP_|GATSBY_|PUBLIC_))",
-     "Server env-variabel muligvis eksponeret i klientkode – tjek at det er public variabel",
-     "warning", None),
-
-    (r"import\.meta\.env\.\w+(?!(?:VITE_|PUBLIC_))",
-     "Vite: import.meta.env variabel uden VITE_ prefix – kan være server-side secret",
-     "warning", None),
+    # ── NOTE: process.env.VAR_NAME og import.meta.env.VAR_NAME er KORREKT brug ──
+    # Variabel-*navne* fra .env må og skal fremgå i kildekode (det er hele pointen).
+    # scan_hardcoded_env_values() håndterer det farlige: at selve VÆRDIEN er hardcodet.
+    # Vi scanner derfor IKKE for process.env / import.meta.env referencer her.
 ]
 
 SCAN_EXTENSIONS = {

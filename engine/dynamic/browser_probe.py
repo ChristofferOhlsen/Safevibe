@@ -94,6 +94,10 @@ INTERESTING_API_PATTERNS = [
 _MIN_ENV_VALUE_LEN = 8
 
 
+# Regex der matcher credentials embeddet i en URL (f.eks. postgres://user:pass@host)
+_CREDENTIALS_IN_URL = re.compile(r"://[^:@/\s]+:[^@/\s]+@")
+
+
 def _build_env_patterns(env_values: dict) -> list[tuple]:
     """
     Byg dynamiske regex-mønstre fra alle .env-værdier.
@@ -104,6 +108,16 @@ def _build_env_patterns(env_values: dict) -> list[tuple]:
 
     Returns:
         Liste af (compiled_pattern, var_name, value_preview, source_file, severity)
+
+    Bemærk om URL-variabler:
+        Variabler med "URL" i navnet (f.eks. SUPABASE_URL, DATABASE_URL,
+        NEXT_PUBLIC_SUPABASE_URL) er typisk service-endepunkter som browseren
+        naturligt laver requests til – det er forventet og korrekt adfærd at
+        de optræder i netværkstrafikken.
+
+        Vi springer dem over MEDMINDRE de indeholder embedded credentials på
+        formen ://user:pass@host – sådanne URLs fanges allerede af de statiske
+        SECRET_PATTERNS (Database URL med credentials).
     """
     patterns = []
     seen_values = set()
@@ -119,8 +133,17 @@ def _build_env_patterns(env_values: dict) -> list[tuple]:
             continue
         seen_values.add(value)
 
-        # Bestem severity baseret på variabelnavn og indhold
         var_upper = var_name.upper()
+
+        # ── URL-variabler uden credentials springes over ────────────────────
+        # En URL der bruges som API-endepunkt vil naturligt fremgå i netværks-
+        # trafikken – det er korrekt og forventet. Kun URL'er med embedded
+        # credentials (://user:pass@) er et problem, og de fanges af
+        # SECRET_PATTERNS allerede.
+        if "URL" in var_upper and not _CREDENTIALS_IN_URL.search(value):
+            continue
+
+        # Bestem severity baseret på variabelnavn og indhold
         severity = "warning"
         if any(kw in var_upper for kw in (
             "SERVICE_ROLE", "SECRET", "PRIVATE", "ADMIN", "PASSWORD",

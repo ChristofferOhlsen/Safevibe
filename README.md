@@ -277,6 +277,11 @@ Efter scanning viser Safevibe:
 - **⚠️ Prioriterede anbefalinger** (kritisk → advarsel → info)
 - **💡 Konkrete løsninger** til hvert problem
 
+<p align="center">
+  <img src="Billeder/CLI%20RAPPORT.png" width="800" alt="Eksempel på CLI rapport output"/>
+  <br/><em>Eksempel på CLI rapport output</em>
+</p>
+
 ---
 
 ### 🆘 Troubleshooting - Almindelige Fejl
@@ -569,6 +574,11 @@ Browser-proben bruger **alle dine .env-værdier** til at scanne netværkstrafik 
 ## 🎨 Vibe Score System
 
 Efter scanning får du en **Vibe Score** (0-100) baseret på fundne problemer:
+
+<p align="center">
+  <img src="Billeder/WARNINGS.png" width="800" alt="Eksempel på advarsler og findings"/>
+  <br/><em>Eksempel på advarsler og findings i terminalen</em>
+</p>
 
 | Score | Vurdering | Betydning |
 |-------|-----------|-----------|
@@ -958,6 +968,11 @@ Se [LICENSE](LICENSE) for detaljer.
 - [ ] Firebase Rules validation
 - [ ] Custom regex patterns via config
 - [X] HTML rapport-generator
+
+<p align="center">
+  <img src="Billeder/HTML%20RAPPORT.png" width="800" alt="Eksempel på HTML rapport"/>
+  <br/><em>Eksempel på den genererede HTML rapport</em>
+</p>
 
 ---
 
